@@ -184,12 +184,39 @@ Expected after the fix, replacing the Unit 2 "Actual Behavior":
 
 ## Deviations
 
-Nothing changed. The build followed Approach steps 1-6 as written: the
-migration, the `callback_url` model/schema fields, the
-`POST /reviews/{review_id}/webhooks` endpoint with immediate delivery on an
-already-terminal review, `webhook_service.deliver_webhook()`, the
-write-then-refresh wiring at all four of `process_review()`'s terminal
-branches, the `api/main.py` router registration, and the regression tests.
+The build followed Approach steps 1-6: the migration, the `callback_url`
+model/schema fields, the `POST /reviews/{review_id}/webhooks` endpoint with
+immediate delivery on an already-terminal review,
+`webhook_service.deliver_webhook()`, the write-then-refresh wiring at all
+four of `process_review()`'s terminal branches, the `api/main.py` router
+registration, and the regression tests. Three small differences from what
+this plan says, all found while preparing the PR:
+
+1. **`deliver_webhook()` takes a third argument, `review_id`.** The plan
+   names it `deliver_webhook(callback_url, payload)`. The built version is
+   `deliver_webhook(callback_url, payload, review_id)`, so that the
+   `webhook_delivered` / `webhook_delivery_failed` log lines can name the
+   review, matching how every other log line in `review_service.py` does.
+   Behavior is otherwise as planned.
+2. **The registration route passes `UUID(current_user.id)` to
+   `get_review()`.** Running mypy on the branch found
+   `api/routes/webhooks.py:34: Argument "user_id" to "get_review" has
+   incompatible type "str"; expected "UUID"`. The existing routes have the
+   same mismatch but are covered by a baseline suppression in
+   `pyproject.toml`, and that baseline says new code must still fail on new
+   findings. So I converted the value in the new route instead of adding
+   `webhooks` to the suppression list. asyncpg accepts a `UUID` for that
+   column, and the live re-run below shows registration still works.
+3. **Registration endpoint tests were added late.** Step 6 and the Files
+   list promise tests for the registration endpoint, and my first build only
+   tested `deliver_webhook()` and the `process_review()` helper. I added
+   `TestRegisterWebhook` in `tests/unit/test_webhook_service.py`: immediate
+   delivery when the review is already complete, store-only when it isn't,
+   and 404 for an unknown review. The plan's other named case, "register
+   before completion, then complete, fires exactly one POST", is covered
+   only at the helper level (`TestDeliverWebhookIfRegistered`), not as one
+   end-to-end test. With the mock LLM the review finishes before a second
+   request can land, so the live re-run can't exercise it either.
 
 The plan itself went through real revision, but that happened before
 posting, not during the build: the first draft I checked with `plan-check`
@@ -204,5 +231,6 @@ exactly one POST (delivered from the registration request itself, since
 the review had already completed by the time registration landed — the
 exact race the plan accounts for), a review with no callback registered
 produced no POST, and a callback registered after a review was already
-complete still delivered immediately rather than being rejected. Full
-commands and output are in `plan-and-implement.md`'s Evidence field.
+complete still delivered immediately rather than being rejected. I re-ran
+all three cases on the final branch commit for the PR. Full commands and
+output are in `test_evidence.md`.
