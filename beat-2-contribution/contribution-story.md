@@ -55,10 +55,9 @@ happened; these entries are the toolkit's own timeline.
 All four entries are graded. Keep every heading below, and fill each
 one in the week it belongs to.
 
-**Unit 5: [one line on the tool work]**
+**Unit 5: Turned my issue grader into a scout that searches GitHub, and fixed the checks a real scan exposed**
 
-[2-4 sentences: what you built (the scout, your strategy), what broke
-or fell short, what changed because of it.]
+I upgraded my Unit 1 grader into issue-scout by writing six `gh search issues` queries from my fit profile (TypeScript, Swift, UI, LLM, chat, GitHub Actions) and eight ranking rules, which narrowed 600 results to five graded candidates. The first scan accepted mailair#18, a task that only a repo admin could do (deleting an Actions secret), and all four accepted repos had 0–1 stars. So I added a "can land as a PR from a non-maintainer" condition to my newcomer-scope check and a new `repo_adoption` check, and fixed two ranking rules that weren't doing what I intended (the Swift date window and the multi-match order). When I graded my Issue Selection site picks, the scout rejected five of six for real reasons (two already had open PRs from other contributors, two were in a repo with no commits in 92 days, and one was design-only work with no code to change), but it also showed a gap I haven't fixed yet: it treats any closed linked PR as "unclaimed" without checking why it was closed.
 
 **Unit 6: [one line on the tool work]**
 
