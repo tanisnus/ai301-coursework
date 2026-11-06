@@ -138,26 +138,26 @@ patched, so I read PR #4330's thread by hand.
 
 **Problem Description**
 
-[In your own words, what is broken or missing?]
+The extension's theming subsystem has no "disable" option. Users who want to use other theming tools (like Stylus) cannot turn off the extension's built-in theming, because the theme rules apply `!important` overrides that prevent other CSS from taking effect.
 
 **Expected Behavior**
 
-[What should happen?]
+Users should be able to select a "None" theme option that disables all of the extension's theming, allowing external tools like Stylus to work without interference.
 
 **Current Behavior**
 
-[What actually happens?]
+The Themes menu offers nine named options (light, dark, custom, black, plain, sunset, night, dawn, desert) plus an implicit default. There is no way to disable theming. Any active theme applies `!important` CSS rules that override other styling, including user-added CSS from extensions like Stylus.
 
 **Affected Components**
 
-[Which parts of the codebase are involved?]
+The theming is a two-layer system: the `setTheme()` function in `js&css/web-accessible/www.youtube.com/themes.js` handles DOM side effects (dark attributes, custom-color styles, #cinematics style, the f6 PREF cookie), and the CSS in `js&css/extension/www.youtube.com/styles.css` applies the visual theme with `!important` rules keyed off the `html[it-theme=<name>]` attribute. Adding the option touches: the theme radio options in `menu/skeleton-parts/themes.js`, the theme label in `_locales/en/messages.json`, and the CSS selectors and `setTheme()` logic that currently skip only the `default` theme.
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- Tool: repro-check, already done in Unit 6. No tool work this phase; the Understanding came from the reproduction evidence I already collected.
+- What it produced: The same accept verdict and evidence that confirmed the issue is real.
+- Difficulties: none this phase.
+- What changed: nothing in the rubric; this phase was writing the Understanding section from what repro-check had already shown.
 
 ---
 
@@ -231,29 +231,36 @@ first draft, so the work was writing it to the evidence I actually had.
 
 **Analysis**
 
-[Your analysis of the root cause: what is causing the issue, traced
-to the files and functions involved.]
+The repo already has a `text: 'none'` entry in `_locales/en/messages.json` from before this issue was opened. The missing piece is the theme option itself and the code to support it. The theme menu (`menu/skeleton-parts/themes.js`) lacks a `none` radio option in the `section.themes.on.click.section` object. The CSS selectors in `js&css/extension/www.youtube.com/styles.css` (lines 744–757) use `:not([it-theme=default])` to apply `!important` overrides to everything except the default, so a new "none" theme will still match and receive the overrides. The `setTheme()` function in `js&css/web-accessible/www.youtube.com/themes.js` (lines 101–128) has a `case 'default'` that clears side effects but no equivalent for "none". The tests expect the menu option to exist (`tests/unit/themes-menu.test.js`).
 
 **Proposed Solution**
 
-[High-level description of your fix approach, and what you are
-deliberately NOT changing.]
+Add a new "none" theme option that disables all theming without applying CSS styling. This requires:
+- A new radio option named `none` in the theme menu, with `value: 'none'` and `variant: 'none-theme'`, placed after `opposite` (the dark option) for menu flow.
+- A visual swatch in `menu/styles/themes.css` for the `none-theme` variant (a striped pattern to signal "disabled").
+- CSS selector changes to `:not([it-theme=default]):not([it-theme=none])` to exclude the new "none" theme from the `!important` overrides.
+- A new `case 'none'` in `setTheme()` that clears all theming side effects without applying new styles (matching the logic I will deduce from the other cases).
+- A unit test asserting the menu option exists with the correct radio group and value.
+
+Not changing: the mechanism for storing the theme choice (the `theme` storage key and the extension's storage API), the CSS variable names, the menu structure's other options, or any unrelated tests.
 
 **Implementation Plan**
 
-1. [Modify file X to do Y]
-2. [Add or change Z]
-3. [Update tests]
+1. Add the `none` radio option to `menu/skeleton-parts/themes.js` after the `opposite` (dark) option.
+2. Add the `.satus-label--none-theme` swatch styling to `menu/styles/themes.css`.
+3. Update CSS selectors in `js&css/extension/www.youtube.com/styles.css` to exclude `none` from `!important` overrides (six rules on lines 744–757).
+4. Add a `case 'none'` in `setTheme()` to clear the dark attribute, custom-color element, #cinematics style, and f6 PREF cookie.
+5. Add a unit test in `tests/unit/themes-menu.test.js` asserting the `none` option exists with `radio.group === 'theme'` and `radio.value === 'none'`.
+6. Run the test suite to confirm all 230 tests pass.
 
-[Record deviations here as they happen: what changed mid-build and
-why. A recorded deviation is honest work; silent drift is not.]
+Deviation: None yet.
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- Tool: plan-check (Unit 7), run on plan.md and plan-comment.md against issue https://github.com/code-charity/youtube/issues/4329.
+- What it produced: ACCEPT verdict. All seven required checks passed: Grounded-cause (plan diagnosis matches repro evidence exactly), Bounded-scope (plan names one change, states what's not changing, no scope creep), Executable (six concrete ordered steps with specific files and line numbers), Decisive-test (unit test and full suite pass are observable outcomes tied to the fix), Honest-uncertainty (plan acknowledges it will deduce implementation details, doesn't claim false certainty), Thread-aware (no maintainer direction found; passes by default), Disclosure (repo has no AI-use policy; no disclosure required).
+- Difficulties: none met. The plan and comment were ready on the first run.
+- What changed: nothing in the plan; the first draft was ready to post. The Toolkit block here documents plan-check's ACCEPT outcome.
 
 ---
 
