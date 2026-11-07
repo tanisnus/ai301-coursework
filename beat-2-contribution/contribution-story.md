@@ -7,7 +7,7 @@ the repository is not read. **Keep every section header below under its exact na
 format criteria grade exactly that. Your course repo link is the whole submission: no tool
 files and no evidence uploads are part of Assignment 5.
 
-**Contribution Number:** 1
+**Contribution Number:** [1]
 **Student:** Tanis Sarbatananda
 **GitHub Username:** tanisnus
 **Issue:** https://github.com/code-charity/youtube/issues/4329
@@ -185,8 +185,7 @@ For testing the fix: I did not load the extension again on the `feature/disable-
 `html[it-theme]:not([it-theme=default]) ... { ... !important; }` (plus L751–757
 forcing link/text colors); `js&css/web-accessible/www.youtube.com/themes.js`
 L101–128 `setTheme()` has cases for each named theme and `default` but none to
-disable theming. (A Themes-menu screenshot can be added once the extension is
-loaded; it shows the same option list.)
+disable theming.
 - **My findings:** the issue is real on commit `6d85ec53`. I confirmed it by
 opening the Themes menu (nine options, no "none") and reading the source files
 showing `!important` overrides on all named themes. The fix will need to
