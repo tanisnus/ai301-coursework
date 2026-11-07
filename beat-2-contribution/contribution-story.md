@@ -11,7 +11,7 @@ files and no evidence uploads are part of Assignment 5.
 **Student:** Tanis Sarbatananda
 **GitHub Username:** tanisnus
 **Issue:** https://github.com/code-charity/youtube/issues/4329
-**Pull Request:** [GitHub PR link, once opened]
+**Pull Request:** https://github.com/code-charity/youtube/pull/4464
 
 One repository, built across units 5 to 8, telling the whole story of your real
 contribution. Fill it as you work, not at the end — the sections below ask for evidence that
@@ -62,10 +62,9 @@ I upgraded my Unit 1 grader into issue-scout by writing six `gh search issues` q
 
 I consolidated my voice guide into one canonical file, added an Upstream section with rules for the claims, questions, and pings I post, and installed a PreToolUse hook that runs the voice pass on every `gh issue comment` or PR body I send through Claude Code. It fired for real on my claim to code-charity/youtube#4329: the wiring test was stopped as expected, one of my own commands was stopped because I passed the body path as a shell variable (`--body-file "$DRAFT"`, which the hook reads literally and cannot resolve), and once I re-ran it with the literal path the voice pass passed and the comment posted, logging a clean entry in guard-log.md. I also wrote a `CLAUDE.local.md` for my youtube fork: one scoped orientation showed the theming is applied in two layers (an `it-theme` CSS attribute written from storage, plus side effects in `setTheme()`), so I distilled that into the file and kept it out of my PR with `.git/info/exclude` instead of re-learning the subsystem every session.
 
-**Unit 7: [one line on the tool work]**
+**Unit 7: Wrote ship-manifest.md, ran ship-gate twice on the PR, fixed voice guide issues**
 
-[2-4 sentences: the ship-gate and your gate manifest. What it produced
-on your real branch, what fought you, what changed because of it.]
+The ship-gate installed cleanly and created ship-manifest.md. I tested the two manifest checks (npx jest and npm test) in a fresh shell on master to verify the commands work. Both passed on master (229 tests) and pass on the branch (230 tests). The first ship-gate run said PASS after plan-check and voice guide corrections. The second run also said PASS after I fixed the CSS description to accurately say "ten selectors across six rules" and rewrote the shortfall section to state facts instead of apologetic language. The hook test in step 4 worked: both voice guard and ship-gate stopped gh pr create --help as expected.
 
 **Unit 8: [one line on the tool work]**
 
@@ -305,27 +304,22 @@ All 230 tests pass. No deviations from the plan; the implementation matches the 
 
 ## Pull Request
 
-**PR Link:** [GitHub PR URL when opened]
+**PR Link:** https://github.com/code-charity/youtube/pull/4464
 
-**PR Description:** [what the PR says; much of the content above
-adapts into it]
+**PR Description:** Adds a "none" theme option that disables the extension's theming, so Stylus and other CSS tools can style the page without `!important` interference. The fix updates three layers: menu (new radio option with striped swatch), CSS selectors (ten selectors across six rules updated to exclude "none" from overrides), and behavior (new `case 'none'` in `setTheme()` clearing side effects). Tests go from 229 to 230 passing. Testing was source-level; the extension was not loaded in Chrome. AI assisted with plan, test draft, and implementation review. Author made code decisions and verified the source.
 
 **Maintainer Feedback:**
 
-- [Date]: [feedback received, or "none yet"; silence is a normal
-state and costs you nothing]
-- [Date]: [how you addressed it]
+- none yet
 
-**Status:** [Awaiting review / Iterating / Merged / Closed. The
-status is a fact you record, never a grade: the PR is graded as
-opened.]
+**Status:** Awaiting review
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- Tool: ship-gate (Unit 7), run on the branch with the PR title and pr_draft.md description. Then gh pr create to post the PR.
+- What it produced: PASS verdict on the first run after voice guide corrections. The PR opened at https://github.com/code-charity/youtube/pull/4464 on the original repo (not the fork).
+- Difficulties: The first ship-gate run found two issues: (1) the description said "six selectors" but there were 10; (2) the voice guard said the shortfall statement sounded apologetic rather than factual. Both were fixed in pr_draft.md.
+- What changed: Rewrote the CSS selector description to be accurate (10 selectors across 6 rules, with five keeping :not([it-theme=dark])). Rewrote the shortfall section from "I have not..." to "Testing was limited to..., the extension was not loaded..." to state facts instead of apologize.
 
 ---
 
