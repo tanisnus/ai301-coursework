@@ -163,14 +163,9 @@ The theming is a two-layer system: the `setTheme()` function in `js&css/web-acce
 
 **Environment Setup**
 
-macOS 26.4 (Darwin 25.4.0), Google Chrome 156.0.8078.47. I cloned my fork
-(tanisnus/youtube, branch `feature/disable-theme`, commit `6d85ec53`, the
-ImprovedTube extension at manifest v4) and loaded it unpacked via
-chrome://extensions -> Developer mode -> Load unpacked -> the clone folder.
-This is a source-level reproduction read against that commit and confirmed in
-the extension's own menu; the clone builds nothing for Chrome, so no setup
-challenges came up. (Local Node is v26.7.0 while the repo's CI pins Node 20,
-but that only affects the test run, not this runtime-theming reproduction.)
+For reproducing the original issue: macOS 26.4 (Darwin 25.4.0), Google Chrome 156.0.8078.47. I cloned my fork (tanisnus/youtube, commit `6d85ec53`, the ImprovedTube extension at manifest v4) and loaded it unpacked via chrome://extensions -> Developer mode -> Load unpacked. I verified the issue existed by reading the Themes menu and the source files showing no "none" option and `!important` overrides on all named themes.
+
+For testing the fix: I did not load the extension again on the `feature/disable-theme` branch. Testing was source-level only: reading the changed files to verify they match the plan, and running the unit test suite (Jest). (Local Node is v26.7.0 while the repo's CI pins Node 20; it only affects test runs, not this verification.)
 
 **Steps to Reproduce**
 
@@ -192,14 +187,13 @@ forcing link/text colors); `js&css/web-accessible/www.youtube.com/themes.js`
 L101–128 `setTheme()` has cases for each named theme and `default` but none to
 disable theming. (A Themes-menu screenshot can be added once the extension is
 loaded; it shows the same option list.)
-- **My findings:** the issue is real on commit `6d85ec53`. There is no user
-option to disable the extension's theming, and selected themes apply
-`!important` overrides, which is the behavior the reporter describes. The fix
-will need to neutralize both layers: make a new option produce no `it-theme`
-CSS match and have `setTheme()` tear down its prior side effects (dark
-attribute, custom-color style, #cinematics, the YT `f6` PREF cookie). Honest
-limit: I verified this from the source and the menu's option list, not yet
-from a live Stylus side-by-side.
+- **My findings:** the issue is real on commit `6d85ec53`. I confirmed it by
+opening the Themes menu (nine options, no "none") and reading the source files
+showing `!important` overrides on all named themes. The fix will need to
+neutralize both layers: make a new option produce no `it-theme` CSS match and
+have `setTheme()` tear down its prior side effects. Honest limit: the issue
+was confirmed live, but the fix was never tested in Chrome or against Stylus;
+it is verified only by source-level inspection and unit test pass.
 
 **Toolkit**
 
@@ -255,13 +249,15 @@ Deviation: None yet.
 
 ## Testing Strategy
 
-Re-run the reproduction steps from Unit 6 to verify the fix works:
+Verify the fix by source-level checks and unit tests (checks 1–4 below are observable without loading the extension):
 
-1. **Menu option exists:** Read `menu/skeleton-parts/themes.js` (or open the loaded extension's Themes menu) and confirm a `none` radio option exists after the `dark` option with `value: 'none'`. Before: nine options (light through desert); after: ten options including "none" at the correct position.
+1. **Menu option exists:** Read `menu/skeleton-parts/themes.js` and confirm a `none` radio option exists after the `dark` option with `value: 'none'`. Before: nine options; after: ten options including "none" at the correct position.
 2. **CSS excludes 'none' from overrides:** Verify that `js&css/extension/www.youtube.com/styles.css` lines 744–757 use `:not([it-theme=default]):not([it-theme=none])` instead of just `:not([it-theme=default])`. Before: selector matches all themes; after: selector excludes "none".
 3. **setTheme() clears side effects:** Confirm `js&css/web-accessible/www.youtube.com/themes.js` has a `case 'none'` that removes the dark attribute, custom-color element, #cinematics style, and f6 PREF cookie. Before: only "default" case clears effects; after: "none" case does the same.
 4. **Unit test passes:** Run `npx jest tests/unit/themes-menu.test.js` and confirm the test "offers a None option that disables the extension theming" passes. Before: test doesn't exist; after: test passes.
 5. **All tests pass:** Run `npm test` (= `npx jest`). Before: 229 tests; after: 230 tests (all pass).
+
+**Live test (not yet run):** Load the fixed extension on `feature/disable-theme` in Chrome, open the Themes menu, select "none", and verify that a Stylus rule styling the page now takes effect (the theme overrides are gone). This would confirm the fix works end-to-end.
 
 **Toolkit**
 
