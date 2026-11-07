@@ -174,19 +174,10 @@ but that only affects the test run, not this runtime-theming reproduction.)
 
 **Steps to Reproduce**
 
-1. List the theme options the extension offers: read the `group: 'theme'` radio
-
-   options in `menu/skeleton-parts/themes.js` (or open the loaded extension's
-    menu and go to the Themes section).
+1. List the theme options the extension offers: read the `group: 'theme'` radio options in `menu/skeleton-parts/themes.js` (or open the loaded extension's menu and go to the Themes section).
 2. Look for an option that turns the extension's theming off entirely.
-3. Check how a chosen theme is applied: read the `html[it-theme]...` rules in
-
-   `js&css/extension/www.youtube.com/styles.css` and `ImprovedTube.setTheme()`
-    in `js&css/web-accessible/www.youtube.com/themes.js`.
-4. Observed result: the options are `light, dark, custom, black, plain, sunset,
-
-   night, dawn, desert`with no "None"/disable option; any non-default theme  applies`!important`CSS that overrides other styling; and`setTheme()` has
-    no branch that removes the extension's theming.
+3. Check how a chosen theme is applied: read the `html[it-theme]...` rules in `js&css/extension/www.youtube.com/styles.css` and `ImprovedTube.setTheme()` in `js&css/web-accessible/www.youtube.com/themes.js`.
+4. Observed result: the options are `light, dark, custom, black, plain, sunset, night, dawn, desert` with no "None"/disable option; any non-default theme applies `!important` CSS that overrides other styling; and `setTheme()` has no branch that removes the extension's theming.
 
 **Reproduction Evidence**
 
