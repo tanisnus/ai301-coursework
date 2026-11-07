@@ -266,39 +266,40 @@ Deviation: None yet.
 
 ## Testing Strategy
 
-[What observable checks prove the fix: your reproduction steps re-run
-against the built change (before and after), and the repo's own test
-suite or checks with the outcome shown. "Tests pass" with nothing
-observable named is not a strategy.]
+Re-run the reproduction steps from Unit 6 to verify the fix works:
+
+1. **Menu option exists:** Read `menu/skeleton-parts/themes.js` (or open the loaded extension's Themes menu) and confirm a `none` radio option exists after the `dark` option with `value: 'none'`. Before: nine options (light through desert); after: ten options including "none" at the correct position.
+2. **CSS excludes 'none' from overrides:** Verify that `js&css/extension/www.youtube.com/styles.css` lines 744–757 use `:not([it-theme=default]):not([it-theme=none])` instead of just `:not([it-theme=default])`. Before: selector matches all themes; after: selector excludes "none".
+3. **setTheme() clears side effects:** Confirm `js&css/web-accessible/www.youtube.com/themes.js` has a `case 'none'` that removes the dark attribute, custom-color element, #cinematics style, and f6 PREF cookie. Before: only "default" case clears effects; after: "none" case does the same.
+4. **Unit test passes:** Run `npx jest tests/unit/themes-menu.test.js` and confirm the test "offers a None option that disables the extension theming" passes. Before: test doesn't exist; after: test passes.
+5. **All tests pass:** Run `npm test` (= `npx jest`). Before: 229 tests; after: 230 tests (all pass).
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- Tool: The repo's own test suite (jest, run via npm test and npx jest) and source-level verification (reading the changed files to confirm the option, selectors, and case exist). No tool work beyond what the manifest requires.
+- What it produced: All 230 tests pass, including the new test for the "none" option. Source-level checks confirm the menu option, CSS selectors, and setTheme() case match the plan.
+- Difficulties: none met.
+- What changed: nothing in the Testing Strategy; the approach matched the plan and the evidence is observable and concrete.
 
 ---
 
 ## Implementation Notes
 
-[A running log, added to as you work. Date each entry. What you
-built, decisions you made when you made them, wrong turns included.]
+**2026-11-06**
 
-**[Date]**
+Built and committed the fix on branch `feature/disable-theme` in three logical commits:
+1. Commit 380c3f03: Added the `none` radio option to the theme menu (menu/skeleton-parts/themes.js), the striped swatch styling (menu/styles/themes.css), and the `case 'none'` in setTheme() to clear side effects (dark attribute, custom colors, #cinematics, f6 cookie).
+2. Commit 0c19f444: Updated six CSS selectors in js&css/extension/www.youtube.com/styles.css to exclude the "none" theme from `!important` overrides by adding `:not([it-theme=none])` to each selector. Decision: split this into its own commit to make the behavioral change (excluding "none" from styling) distinct from the setup changes.
+3. Commit bffabfe3: Added unit test in tests/unit/themes-menu.test.js asserting the "none" option exists with correct radio.group and radio.value.
 
-[Entry]
-
-**[Date]**
-
-[Entry]
+All 230 tests pass. No deviations from the plan; the implementation matches the Analysis and Implementation Plan exactly. No wrong turns or blocked decisions.
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- Tool: git workflow (branching, staging, committing) and the repo's test suite (jest). The tool work was straightforward: write the feature across five files and verify tests pass.
+- What it produced: Three clean, logical commits with descriptive messages. All 230 tests pass, including the new test. The fix is ready for the ship-gate and PR.
+- Difficulties: none met. The plan was specific enough that implementation was direct.
+- What changed: nothing in the approach; the Implementation Plan was executed as written.
 
 ---
 
