@@ -66,10 +66,9 @@ I consolidated my voice guide into one canonical file, added an Upstream section
 
 The ship-gate installed cleanly and created ship-manifest.md. I tested the two manifest checks (npx jest and npm test) in a fresh shell on master to verify the commands work. Both passed on master (229 tests) and pass on the branch (230 tests). The first ship-gate run said PASS after plan-check and voice guide corrections. The second run also said PASS after I fixed the CSS description to accurately say "ten selectors across six rules" and rewrote the shortfall section to state facts instead of apologetic language. The hook test in step 4 worked: both voice guard and ship-gate stopped gh pr create --help as expected.
 
-**Unit 8: [one line on the tool work]**
+**Unit 8: Installed the PR monitor, wrote a playbook from the repo's real review gaps, and ran it on PR #4464**
 
-[2-4 sentences: the PR-monitor and your playbook. What it read, what it
-drafted, what you did with the draft.]
+I wrote my playbook's staleness threshold from data instead of a guess: CONTRIBUTING.md states no wait, and on six recent outside PRs the one maintainer who merges (ImprovedTube2) first acted after 0.5 to 11.5 days, so I set 14 quiet days for a first review. On my PR, opened the same day, the monitor drafted a wait note instead of a nudge (earliest nudge 2026-11-21), so I posted nothing. It also flagged "no checks reported" with merge state UNSTABLE but couldn't say why, which confused me until I checked `gh run list` and found the CI run is `action_required`, waiting for a maintainer to approve a first-time contributor's workflows. I added a rule to my Nudge etiquette so a future draft treats that as expected and not as a failing check.
 
 ---
 
@@ -310,7 +309,7 @@ All 230 tests pass. No deviations from the plan; the implementation matches the 
 
 **Maintainer Feedback:**
 
-- none yet
+- 2026-11-07: none yet
 
 **Status:** Awaiting review
 
@@ -327,25 +326,71 @@ All 230 tests pass. No deviations from the plan; the implementation matches the 
 
 **Technical Skills Gained**
 
-[What you learned technically, named concretely.]
+- Reading a theming system that works in two layers. In ImprovedTube the
+  visual theme comes from CSS rules keyed off an `html[it-theme=<name>]`
+  attribute, and `setTheme()` in `themes.js` handles the side effects (the
+  dark attribute, custom-color styles, #cinematics, the `f6` PREF cookie).
+  A new option had to be handled in both places, not just one.
+- Chaining `:not()` selectors to exclude a value from `!important` rules.
+  I added `:not([it-theme=none])` to ten selectors across six rules, and
+  learned to count selectors, not rules, when I describe a CSS change.
+- Adding a jest unit test to an existing suite and running the repo's own
+  checks (`npm test`, `npx jest`) on master and on my branch to compare
+  (229 before, 230 after).
+- Working with a fork and an upstream remote, and using the `gh` CLI for
+  more than opening a PR: `gh search issues` for the scout, `gh pr view`
+  to measure review gaps on merged PRs, and `gh run list` to find out why
+  my PR showed no checks.
+- Writing Claude Code tooling around my own work: skills with written
+  rubrics (issue-scout, repro-check, plan-check, pr-precheck), and
+  PreToolUse hooks (the voice guard and the ship-gate) that stop a command
+  before it posts.
 
 **Challenges Overcome**
 
-[What was hard and how you solved it; point at the real events, the
-Toolkit blocks above are full of them.]
+- My scout's first scope check rejected almost every real issue, because
+  real issues usually have an open edge. I replaced it with a
+  `scope-feasible` floor and moved the detail into a difficulty note. That
+  change is the reason it could accept #4329 at all.
+- The voice guard blocked one of my own posts because I passed the body
+  file as a shell variable (`--body-file "$DRAFT"`), which the hook reads
+  literally. Re-running with the literal path fixed it, and the comment
+  posted with a clean log entry.
+- The ship-gate caught a wrong count in my PR description ("six
+  selectors" when the diff changed ten) and a shortfall line that read as
+  an apology. I rewrote both before opening the PR.
+- After opening the PR, the monitor showed "no checks reported" and merge
+  state UNSTABLE. I traced it with `gh run list`: the CI run is
+  `action_required`, waiting for a maintainer to approve a first-time
+  contributor's workflows. I added that to my playbook so I don't misread
+  it later.
 
 **What I'd Do Differently Next Time**
 
-[Reflection on your process.]
+- Load the extension in Chrome and test it next to Stylus before opening
+  the PR. My testing was source-level only. The PR says so honestly, but a
+  live check would have been stronger evidence.
+- Fix the scout's closed-PR gap when I first find it. I logged in Unit 5
+  that it treats any closed linked PR as "unclaimed", and then had to read
+  PR #4330's thread by hand.
+- Write Implementation Notes on the day I work, with the wrong turns
+  included, instead of one summary entry after the commits are done.
+- Look at how a repo's CI treats first-time contributors before opening
+  the PR, so a missing check doesn't surprise me.
 
 ---
 
 ## Resources Used
 
-[What actually helped, not a reading list. List things this story
-already shows you using: the doc you followed to set the environment
-up, the thread that explained the bug, the person who answered you.
-One real entry beats ten plausible ones.]
-
-- [Link to documentation that helped]
-- [Discussion, issue, or post that helped]
+- The issue thread, https://github.com/code-charity/youtube/issues/4329,
+  which describes the Stylus conflict that the "none" theme is for.
+- The closed PR https://github.com/code-charity/youtube/pull/4330. I read
+  its thread by hand to confirm the issue was still open to work on.
+- The repo's CONTRIBUTING.md, which I checked for an AI-use policy and for
+  a stated review wait (it has neither).
+- Six recently merged outside PRs (#4446, #4415, #4376, #4405, #4404,
+  #4387), which I used to set my playbook's 14-day nudge threshold.
+- My `CLAUDE.local.md` repo-memory file from Unit 6, which recorded how
+  the two theming layers fit together so I didn't have to re-learn them.
+- The repo's jest suite (`tests/unit/themes-menu.test.js`), which showed
+  me how the existing menu tests were written before I added mine.
